@@ -2,7 +2,7 @@
 #define COOLEST_LINKED_LIST_LIBRARY
 
 typedef struct Node {
-    int data;
+    void* data;
     struct Node* prev;
     struct Node* next;
 } Node;
@@ -12,11 +12,16 @@ typedef struct LinkedList {
     Node* tail;
 } LinkedList;
 
-LinkedList* create_linkedlist(int data);
-void push(LinkedList* ll, int data);
-int pop(LinkedList* ll);
-void traverse(LinkedList* l);
-void free_linkedlist(LinkedList* l);
-int linkedlist_index(LinkedList* l, int idx);
+#define new(x) (x*)malloc(sizeof(x))
+#define l_from(len, dtype, data) _l_from(len, sizeof(dtype), data)
+#define l_push(ll, dtype, data) _l_push(ll, sizeof(dtype), (void*)data)
+
+LinkedList* _l_from(int length, unsigned int sz, void* data);
+void l_free(LinkedList* ll);
+int l_length(LinkedList* ll);
+void* l_at(LinkedList* ll, int idx);
+void _l_push(LinkedList* ll, unsigned int sz, void* data);
+void* l_pop(LinkedList* ll);
+char* l_tostring(LinkedList* ll, char* print_str);
 
 #endif

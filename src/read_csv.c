@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #define MAX 50
 #include "linked_list.h"
 
@@ -27,12 +28,12 @@ Img** get_data(char* filename) {
 }
 
 int main() {
-    LinkedList* l = create_linkedlist(69);
-    push(l, 420);
-    traverse(l);
-    printf("%d\n", linkedlist_index(l, 1));
-    printf("%d\n", pop(l));
-    traverse(l);
-    free_linkedlist(l);
+    LinkedList* l = l_from(0, int, NULL);
+    l_push(l, int, 420);
+
+    printf("%d\n", *(int*)l_at(l, 1));
+    printf("%d\n", *(int*)l_pop(l));
+
+    l_free(l);
     return 0;
 }

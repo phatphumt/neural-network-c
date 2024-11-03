@@ -2,78 +2,102 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-LinkedList* create_linkedlist(int data) {
-    Node* head_node = (Node*)malloc(sizeof(Node));
-    head_node->data = data;
-    head_node->next = NULL;
-    head_node->prev = NULL;
+LinkedList* _l_from(int length, unsigned int sz, void* data) {
+    LinkedList* ll = new (LinkedList);
+    ll->head = NULL;
+    ll->tail = NULL;
 
-    LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
-    list->head = head_node;
-    list->tail = head_node;
-    return list;
+    if (!length) return ll;
+
+    for (int i = 0; i < length; i++) {
+        Node* node = new (Node);
+        node->data = malloc(sz);
+        memcpy(node->data, (char*)data + (i * sz), sizeof(sz));
+
+        // No elems.
+        if (!ll->tail) {
+            ll->head = node;
+            ll->tail = node;
+            node->prev = NULL;
+            node->next = NULL;
+            continue;
+        }
+
+        node->prev = ll->tail;
+        node->next = NULL;
+        ll->tail->next = node;
+        ll->tail = node;
+    }
+    return ll;
 }
 
-void push(LinkedList* ll, int data) {
-    Node* new_node = (Node*)malloc(sizeof(Node));
-    new_node->data = data;
-    ll->tail->next = new_node;
+void l_free(LinkedList* ll) {
+    for (Node* node = ll->head->next; node; node = node->next) {
+        free(node->prev->data);
+        free(node->prev);
+    }
+    free(ll->tail->data);
+    free(ll->tail);
+    free(ll);
+}
 
+int l_length(LinkedList* ll) {
+    int len = 0;
+    for (Node* node = ll->head; node; node = node->next, len++);
+    return len;
+}
+
+void* l_at(LinkedList* ll, int idx) {
+    int len = l_length(ll);
+    int new_idx = idx;
+    new_idx = (idx + len) % len;
+    Node* node = ll->head;
+    for (; node && new_idx; node = node->next, new_idx--);
+    if (new_idx) fprintf(stderr, "Index Error\n");
+    return node->data;
+}
+
+void _l_push(LinkedList* ll, unsigned int sz, void* data) {
+    Node* new_node = new (Node);
+    new_node->data = malloc(sz);
+    memcpy(new_node->data, &data, sz);
     new_node->prev = ll->tail;
     new_node->next = NULL;
+    ll->tail->next = new_node;
     ll->tail = new_node;
+    if (!ll->head) ll->head = new_node;
 }
 
-int pop(LinkedList* ll) {
+void* l_pop(LinkedList* ll) {
+    if (!ll->tail) fprintf(stderr, "tf you poppin?");
     Node* old_tail = ll->tail;
-    int old_tail_data = old_tail->data;
+    void* old_tail_data = old_tail->data;
     ll->tail = ll->tail->prev;
-    ll->tail->next = NULL;
     free(old_tail);
-
     return old_tail_data;
 }
 
-void traverse(LinkedList* l) {
-    Node* temp = l->head;
-    printf("[");
-    while (temp != NULL) {
-        printf("%d, ", temp->data);
-        temp = temp->next;
+char* l_tostring(LinkedList* ll, char* print_str) {
+    char* result = (char*)malloc(999999);
+    char buffer[1000];
+    strcpy(result, "[");
+    for (Node* node = ll->head; node; node = node->next) {
+        sprintf(buffer, print_str, node->data);
+        strcat(result, buffer);
+        strcat(result, ",");
     }
-    printf("]\n");
-}
-
-void free_linkedlist(LinkedList* l) {
-    Node* temp = l->head;
-    while (temp != NULL) {
-        if (temp != l->head) {
-            free(temp->prev);
-        }
-        temp = temp->next;
-    }
-    free(l->tail);
-    free(l);
-}
-
-int linkedlist_index(LinkedList* l, int idx) {
-    Node* temp = l->head;
-
-    for (int count = 0; temp != NULL && count < idx; count++) temp = temp->next;
-
-    return temp->data;
+    strcat(result, "]");
+    return result;
 }
 
 // int main() {
-//     LinkedList* l = create_linkedlist(1);
-//     push(l, 2);
-//     push(l, 3);
-//     push(l, 4);
-//     push(l, 5);
-//     traverse(l);
-//     pop(l);
-//     traverse(l);
-//     printf("%d\n", linkedlist_index(l, 1));
-//     free_linkedlist(l);
+//     int test[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+//     LinkedList* l = l_from(10, int, test);
+//     l_push(l, int, 4);
+//     printf("%d\n", *(int*)l_at(l, -1));
+//     printf("%d\n", *(int*)l_pop(l));
+//     l_free(l);
+//     return 0;
 // }
